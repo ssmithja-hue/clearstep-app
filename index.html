@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ClearStep — AI Problem Solver</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#07090F;--bg2:#0D1117;--bg3:#161B27;--blue:#3B82F6;--cyan:#06B6D4;--gold:#F59E0B;--green:#10B981;--red:#EF4444;--purple:#8B5CF6;--text:#E8EEFF;--muted:#6B7A99;--border2:rgba(255,255,255,0.06)}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+    body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(59,130,246,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+    header{position:sticky;top:0;z-index:50;background:rgba(7,9,15,0.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border2);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:0.8rem}
+    .logo{font-size:1.3rem;font-weight:800;letter-spacing:-0.03em;flex-shrink:0}
+    .logo span{color:var(--blue)}
+    .trial-badge{display:flex;align-items:center;gap:0.4rem;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);color:var(--gold);padding:0.3rem 0.8rem;border-radius:100px;font-size:0.75rem;font-weight:600;white-space:nowrap}
+    .trial-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:blink 1.5s infinite;flex-shrink:0}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+    .upgrade-btn{background:linear-gradient(135deg,var(--blue),var(--cyan));color:#fff;border:none;border-radius:8px;font-family:'Outfit',sans-serif;font-weight:700;font-size:0.8rem;padding:0.45rem 1rem;cursor:pointer;transition:all 0.2s;white-space:nowrap;flex-shrink:0}
+    .upgrade-btn:hover{transform:translateY(-1px);box-shadow:0 0 20px rgba(59,130,246,0.4)}
+    main{position:relative;z-index:1;max-width:780px;margin:0 auto;padding:2rem 1.2rem 5rem}
+    .hero{text-align:center;padding:2rem 0 1.8rem}
+    .hero-badge{display:inline-flex;align-items:center;gap:0.4rem;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.25);color:var(--purple);padding:0.3rem 0.9rem;border-radius:100px;font-size:0.75rem;font-weight:600;margin-bottom:1rem}
+    .hero h1{font-size:clamp(1.8rem,5vw,3rem);font-weight:800;letter-spacing:-0.03em;line-height:1.1;margin-bottom:0.8rem}
+    .hero h1 span{color:var(--blue)}
+    .hero p{color:var(--muted);font-size:0.95rem;line-height:1.7;max-width:460px;margin:0 auto 1.5rem}
+    .hero-trust{display:flex;align-items:center;justify-content:center;gap:1.5rem;flex-wrap:wrap}
+    .trust-item{display:flex;align-items:center;gap:0.4rem;font-size:0.78rem;color:var(--muted)}
+    .usage-bar{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:1rem 1.3rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:1rem}
+    .usage-icon{font-size:1.3rem;flex-shrink:0}
+    .usage-info{flex:1}
+    .usage-info .label{font-size:0.78rem;color:var(--muted);margin-bottom:0.35rem}
+    .usage-info .track{height:5px;background:var(--bg3);border-radius:100px;overflow:hidden}
+    .usage-info .fill{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--blue),var(--cyan));transition:width 0.5s ease}
+    .usage-count{font-family:'JetBrains Mono',monospace;font-size:0.85rem;font-weight:500;white-space:nowrap}
+    .ok{color:var(--green)}.warn{color:var(--gold)}.danger{color:var(--red)}
+    .card{background:var(--bg2);border:1px solid var(--border2);border-radius:18px;padding:1.5rem;margin-bottom:1.2rem;position:relative;overflow:hidden;transition:border-color 0.3s}
+    .card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--blue),transparent);opacity:0;transition:opacity 0.3s}
+    .card:focus-within{border-color:rgba(59,130,246,0.2)}
+    .card:focus-within::before{opacity:1}
+    .card-header{display:flex;align-items:center;gap:0.6rem;margin-bottom:1.1rem}
+    .card-icon{width:34px;height:34px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:0.95rem;flex-shrink:0}
+    .card-title{font-size:0.95rem;font-weight:700}
+    .card-sub{font-size:0.73rem;color:var(--muted);margin-left:auto}
+    .field-label{font-size:0.73rem;font-weight:600;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:0.45rem;display:block}
+    textarea,input[type="text"]{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:9px;color:var(--text);font-family:'Outfit',sans-serif;font-size:0.92rem;padding:0.75rem 0.9rem;outline:none;transition:border-color 0.2s,box-shadow 0.2s;resize:vertical}
+    textarea:focus,input[type="text"]:focus{border-color:rgba(59,130,246,0.35);box-shadow:0 0 0 3px rgba(59,130,246,0.07)}
+    textarea{min-height:90px}
+    .why-inputs{display:flex;flex-direction:column;gap:0.5rem}
+    .why-row{display:flex;align-items:center;gap:0.7rem}
+    .why-num{font-family:'JetBrains Mono',monospace;font-size:0.72rem;font-weight:500;color:var(--blue);background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2);border-radius:5px;padding:0.25rem 0.45rem;flex-shrink:0;min-width:34px;text-align:center}
+    .why-row input{margin:0}
+    .options-grid{display:flex;flex-direction:column;gap:0.5rem}
+    .premium-section{position:relative;margin-bottom:1.2rem}
+    .premium-overlay{position:absolute;inset:0;background:rgba(7,9,15,0.88);backdrop-filter:blur(6px);border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.7rem;z-index:10;border:1px solid rgba(245,158,11,0.2);padding:1.5rem;text-align:center}
+    .premium-overlay .lock-icon{font-size:1.8rem}
+    .premium-overlay h3{font-size:0.95rem;font-weight:700}
+    .premium-overlay p{font-size:0.8rem;color:var(--muted);max-width:240px;line-height:1.5}
+    .unlock-btn{background:linear-gradient(135deg,var(--gold),#D97706);color:#000;border:none;border-radius:8px;font-family:'Outfit',sans-serif;font-weight:700;font-size:0.82rem;padding:0.55rem 1.3rem;cursor:pointer;transition:all 0.2s}
+    .unlock-btn:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(245,158,11,0.4)}
+    .analyze-btn{width:100%;background:linear-gradient(135deg,var(--blue),var(--cyan));color:#fff;border:none;border-radius:12px;font-family:'Outfit',sans-serif;font-weight:700;font-size:1rem;padding:1rem;cursor:pointer;transition:all 0.2s;box-shadow:0 0 25px rgba(59,130,246,0.2);display:flex;align-items:center;justify-content:center;gap:0.5rem;margin-bottom:1.5rem}
+    .analyze-btn:hover:not(:disabled){box-shadow:0 0 35px rgba(59,130,246,0.45);transform:translateY(-1px)}
+    .analyze-btn:disabled{opacity:0.45;cursor:not-allowed;transform:none}
+    .loading-state{display:none;text-align:center;padding:2.5rem}
+    .spinner{width:36px;height:36px;border:3px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 0.8rem}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .loading-state p{color:var(--muted);font-size:0.88rem}
+    .loading-tips{font-size:0.78rem;color:var(--purple);margin-top:0.4rem;font-style:italic}
+    #results{display:none}
+    .result-card{background:var(--bg2);border:1px solid rgba(16,185,129,0.2);border-radius:18px;padding:1.5rem;margin-bottom:1.2rem;animation:fadeUp 0.5s ease both}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+    .result-header{display:flex;align-items:center;gap:0.6rem;margin-bottom:1rem;padding-bottom:0.8rem;border-bottom:1px solid var(--border2)}
+    .result-header .badge{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.25);color:var(--green);padding:0.2rem 0.6rem;border-radius:100px;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em}
+    .result-header h3{font-size:0.95rem;font-weight:700}
+    .result-content{font-size:0.9rem;line-height:1.85;color:var(--text);white-space:pre-wrap}
+    .trial-expired{display:none;background:var(--bg2);border:1px solid rgba(245,158,11,0.3);border-radius:18px;padding:2.5rem 1.5rem;text-align:center;margin-bottom:1.5rem}
+    .trial-expired .big-icon{font-size:2.5rem;margin-bottom:0.8rem}
+    .trial-expired h2{font-size:1.3rem;font-weight:800;margin-bottom:0.5rem}
+    .trial-expired p{color:var(--muted);font-size:0.88rem;margin-bottom:1.5rem;line-height:1.6}
+    .price-highlight{font-size:2rem;font-weight:800;color:var(--gold);margin:0.5rem 0}
+    .crisis-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);backdrop-filter:blur(12px);z-index:300;align-items:center;justify-content:center;padding:1.5rem}
+    .crisis-modal.open{display:flex}
+    .crisis-box{background:#0F1A0F;border:2px solid rgba(16,185,129,0.4);border-radius:24px;padding:2.5rem;max-width:420px;width:100%;text-align:center;animation:fadeUp 0.3s ease}
+    .crisis-box .crisis-icon{font-size:3rem;margin-bottom:1rem}
+    .crisis-box h2{font-size:1.3rem;font-weight:800;color:var(--green);margin-bottom:0.8rem}
+    .crisis-box p{color:#A7C4A7;font-size:0.9rem;line-height:1.7;margin-bottom:1.5rem}
+    .crisis-resources{list-style:none;display:flex;flex-direction:column;gap:0.6rem;margin-bottom:1.5rem;text-align:left}
+    .crisis-resources li{background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:10px;padding:0.8rem 1rem}
+    .crisis-resources li strong{color:var(--green);display:block;font-size:0.85rem}
+    .crisis-resources li span{color:#A7C4A7;font-size:0.8rem}
+    .crisis-close{background:var(--green);color:#000;border:none;border-radius:10px;font-family:'Outfit',sans-serif;font-weight:700;font-size:0.9rem;padding:0.8rem 2rem;cursor:pointer;width:100%}
+    .disclaimer-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);z-index:250;align-items:center;justify-content:center;padding:1.5rem}
+    .disclaimer-modal.open{display:flex}
+    .disclaimer-box{background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:2rem;max-width:460px;width:100%;animation:fadeUp 0.3s ease;max-height:85vh;overflow-y:auto}
+    .disclaimer-box h2{font-size:1.1rem;font-weight:800;margin-bottom:1rem}
+    .disclaimer-box p{color:var(--muted);font-size:0.82rem;line-height:1.7;margin-bottom:0.8rem}
+    .agree-btn{width:100%;background:var(--blue);color:#fff;border:none;border-radius:10px;font-family:'Outfit',sans-serif;font-weight:700;font-size:0.9rem;padding:0.85rem;cursor:pointer;margin-top:1rem}
+    .decline-btn{width:100%;background:transparent;color:var(--muted);border:1px solid var(--border2);border-radius:10px;font-family:'Outfit',sans-serif;font-weight:500;font-size:0.82rem;padding:0.7rem;cursor:pointer;margin-top:0.5rem}
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);z-index:200;align-items:center;justify-content:center;padding:1.5rem}
+    .modal-overlay.open{display:flex}
+    .modal{background:var(--bg2);border:1px solid rgba(245,158,11,0.2);border-radius:22px;padding:2rem;max-width:420px;width:100%;animation:fadeUp 0.3s ease;position:relative}
+    .modal-close{position:absolute;top:1rem;right:1rem;background:var(--bg3);border:1px solid var(--border2);color:var(--muted);width:30px;height:30px;border-radius:7px;font-size:0.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+    .modal-header{text-align:center;margin-bottom:1.2rem}
+    .modal-header .m-icon{font-size:2.5rem;margin-bottom:0.5rem}
+    .modal h2{font-size:1.4rem;font-weight:800;margin-bottom:0.3rem}
+    .modal .tagline{color:var(--muted);font-size:0.85rem}
+    .price-block{background:var(--bg3);border:1px solid rgba(245,158,11,0.2);border-radius:14px;padding:1.2rem;text-align:center;margin:1rem 0}
+    .price-block .amount{font-size:2.8rem;font-weight:800;color:var(--gold)}
+    .price-block .per{font-size:0.85rem;color:var(--muted)}
+    .price-block .saving{font-size:0.75rem;color:var(--green);margin-top:0.2rem}
+    .feature-list{list-style:none;margin-bottom:1.5rem;display:flex;flex-direction:column;gap:0.55rem}
+    .feature-list li{display:flex;align-items:flex-start;gap:0.6rem;font-size:0.85rem;color:var(--text);line-height:1.4}
+    .feature-list li .check{color:var(--green);font-weight:700;flex-shrink:0}
+    .pay-btn{width:100%;background:linear-gradient(135deg,var(--gold),#D97706);color:#000;border:none;border-radius:11px;font-family:'Outfit',sans-serif;font-weight:800;font-size:1rem;padding:0.95rem;cursor:pointer;transition:all 0.2s}
+    .pay-btn:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(245,158,11,0.4)}
+    .modal-note{text-align:center;color:var(--muted);font-size:0.72rem;margin-top:0.7rem}
+  </style>
+</head>
+<body>
+<!-- CRISIS MODAL -->
+<div class="crisis-modal" id="crisisModal">
+  <div class="crisis-box">
+    <div class="crisis-icon">💚</div>
+    <h2>You're Not Alone</h2>
+    <p>It sounds like you may be going through something really difficult. Please know that help is available right now.</p>
+    <ul class="crisis-resources">
+      <li><strong>988 Suicide & Crisis Lifeline</strong><span>Call or text 988 — Free, 24/7, confidential</span></li>
+      <li><strong>Crisis Text Line</strong><span>Text HOME to 741741 — Available 24/7</span></li>
+      <li><strong>Emergency Services</strong><span>Call 911 if you are in immediate danger</span></li>
+    </ul>
+    <button class="crisis-close" onclick="closeCrisis()">I've noted these resources — Continue</button>
+  </div>
+</div>
+
+<!-- DISCLAIMER MODAL -->
+<div class="disclaimer-modal" id="disclaimerModal">
+  <div class="disclaimer-box">
+    <h2>⚠️ Important Disclaimer</h2>
+    <p><strong>ClearStep is an AI thinking tool</strong> — not a licensed mental health, legal, or medical service.</p>
+    <p>By using ClearStep you agree that:</p>
+    <p>• AI responses are for <strong>informational purposes only</strong> and do not replace professional advice.</p>
+    <p>• ClearStep is <strong>not liable</strong> for decisions made based on AI content.</p>
+    <p>• If you are in crisis, call <strong>911</strong> or text/call <strong>988</strong> immediately.</p>
+    <p>• ClearStep detects and redirects crisis-related inputs automatically.</p>
+    <p>• You must be <strong>18 or older</strong> to use this service.</p>
+    <button class="agree-btn" onclick="agreeDisclaimer()">I Agree — Continue to ClearStep</button>
+    <button class="decline-btn" onclick="window.history.back()">I Do Not Agree</button>
+  </div>
+</div>
+
+<!-- UPGRADE MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-header">
+      <div class="m-icon">⚡</div>
+      <h2>ClearStep Premium</h2>
+      <p class="tagline">Deep AI clarity for every problem you face</p>
+    </div>
+    <div class="price-block">
+      <div class="amount">$2.99</div>
+      <div class="per">per month · cancel anytime</div>
+      <div class="saving">✓ Less than a coffee — unlimited peace of mind</div>
+    </div>
+    <ul class="feature-list">
+      <li><span class="check">✓</span><span><strong>Unlimited analyses</strong> — no caps ever</span></li>
+      <li><span class="check">✓</span><span><strong>Deep AI depth</strong> — multi-scenario & risk analysis</span></li>
+      <li><span class="check">✓</span><span><strong>Motivational coaching tone</strong></span></li>
+      <li><span class="check">✓</span><span><strong>Prioritized action roadmap</strong> with timelines</span></li>
+      <li><span class="check">✓</span><span><strong>Success metrics</strong> so you know when you've won</span></li>
+    </ul>
+    <button class="pay-btn" onclick="handleUpgrade()">Start Premium for $2.99/mo →</button>
+    <p class="modal-note">🔒 Secure checkout · 7-day money back · Cancel anytime</p>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">Clear<span>Step</span></div>
+  <div class="trial-badge" id="trialBadge"><span class="dot"></span><span id="trialText">3 free left</span></div>
+  <button class="upgrade-btn" onclick="openModal()">⚡ $2.99/mo</button>
+</header>
+
+<main>
+  <div class="hero">
+    <div class="hero-badge">✦ AI-Powered Problem Solving</div>
+    <h1>Turn Any Problem Into<br><span>A Clear Plan</span></h1>
+    <p>Describe what's weighing on you. Our AI breaks it to the root and builds you a real, actionable path forward.</p>
+    <div class="hero-trust">
+      <div class="trust-item"><span>🔒</span> Private & Secure</div>
+      <div class="trust-item"><span>🧠</span> AI-Powered</div>
+      <div class="trust-item"><span>💚</span> Crisis-Aware</div>
+    </div>
+  </div>
+
+  <div class="usage-bar">
+    <div class="usage-icon">🎯</div>
+    <div class="usage-info">
+      <div class="label">Free analyses used</div>
+      <div class="track"><div class="fill" id="usageFill" style="width:0%"></div></div>
+    </div>
+    <div class="usage-count ok" id="usageCount">0 / 3</div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><div class="card-icon">🎯</div><div class="card-title">Define the Problem</div></div>
+    <label class="field-label">What is the core problem?</label>
+    <textarea id="problemInput" placeholder="Describe what's going on — be honest. This is a safe space." rows="3"></textarea>
+    <br/><br/>
+    <label class="field-label">Relevant Facts & Context</label>
+    <textarea id="factsInput" placeholder="Any background or context that matters..." rows="2"></textarea>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><div class="card-icon">🔍</div><div class="card-title">Root Cause Analysis</div><div class="card-sub">5 Whys</div></div>
+    <div class="why-inputs">
+      <div class="why-row"><div class="why-num">W1</div><input type="text" id="why1" placeholder="Why is this happening?"/></div>
+      <div class="why-row"><div class="why-num">W2</div><input type="text" id="why2" placeholder="Why is that?"/></div>
+      <div class="why-row"><div class="why-num">W3</div><input type="text" id="why3" placeholder="And why is that?"/></div>
+      <div class="why-row"><div class="why-num">W4</div><input type="text" id="why4" placeholder="Deeper..."/></div>
+      <div class="why-row"><div class="why-num">W5</div><input type="text" id="why5" placeholder="Root cause?"/></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><div class="card-icon">💡</div><div class="card-title">Possible Options</div><div class="card-sub">Optional</div></div>
+    <div class="options-grid">
+      <input type="text" id="opt1" placeholder="Option 1"/>
+      <input type="text" id="opt2" placeholder="Option 2"/>
+      <input type="text" id="opt3" placeholder="Option 3"/>
+    </div>
+  </div>
+
+  <div class="premium-section" id="premiumSection">
+    <div class="card" style="opacity:0.35">
+      <div class="card-header"><div class="card-icon">🧠</div><div class="card-title">Deep AI Analysis</div><div class="card-sub">Premium</div></div>
+      <div style="height:70px;background:var(--bg3);border-radius:9px;margin-bottom:0.8rem;"></div>
+      <div style="height:35px;background:var(--bg3);border-radius:9px;width:65%;"></div>
+    </div>
+    <div class="premium-overlay" id="premiumOverlay">
+      <div class="lock-icon">🔒</div>
+      <h3>Premium — Deep Analysis</h3>
+      <p>Multi-scenario planning, risk assessment, motivational coaching, and full prioritized roadmap.</p>
+      <button class="unlock-btn" onclick="openModal()">Unlock for $2.99/mo</button>
+    </div>
+  </div>
+
+  <div class="trial-expired" id="trialExpired">
+    <div class="big-icon">✨</div>
+    <h2>You've Used Your 3 Free Analyses</h2>
+    <p>Keep the momentum going — unlock unlimited AI clarity for less than a coffee.</p>
+    <div class="price-highlight">$2.99<span style="font-size:1rem;color:var(--muted);font-weight:400">/mo</span></div>
+    <br/>
+    <button class="upgrade-btn" style="font-size:0.95rem;padding:0.75rem 2rem;" onclick="openModal()">Continue With Premium →</button>
+  </div>
+
+  <button class="analyze-btn" id="analyzeBtn" onclick="runAnalysis()">
+    <span>🧠</span> Generate My Action Plan
+  </button>
+
+  <div class="loading-state" id="loadingState">
+    <div class="spinner"></div>
+    <p>Analyzing your situation with AI...</p>
+    <p class="loading-tips">"Every problem has a solution. Let's find yours."</p>
+  </div>
+
+  <div id="results">
+    <div class="result-card">
+      <div class="result-header"><div class="badge">✓ Analysis Complete</div><h3>Your Action Plan</h3></div>
+      <div class="result-content" id="resultContent"></div>
+    </div>
+  </div>
+</main>
+
+<script>
+  const CRISIS_TRIGGERS=['kill myself','end my life','suicide','suicidal','want to die','dont want to live','self harm','self-harm','cut myself','hurt myself','no reason to live','cant go on','end it all','not worth living','overdose on purpose'];
+  const ILLEGAL_TRIGGERS=['how to steal','how to rob','how to hack someone','how to hurt someone','how to kill someone','how to make a bomb','how to make drugs','how to poison'];
+  function checkCrisis(t){const l=t.toLowerCase();return CRISIS_TRIGGERS.some(x=>l.includes(x))}
+  function checkIllegal(t){const l=t.toLowerCase();return ILLEGAL_TRIGGERS.some(x=>l.includes(x))}
+  let disclaimerAgreed=localStorage.getItem('cs_disclaimer')==='true';
+  function agreeDisclaimer(){localStorage.setItem('cs_disclaimer','true');disclaimerAgreed=true;document.getElementById('disclaimerModal').classList.remove('open')}
+  const MAX_FREE=3;
+  let usageCount=parseInt(localStorage.getItem('cs_usage')||'0');
+  let isPremium=localStorage.getItem('cs_premium')==='true';
+  function init(){if(!disclaimerAgreed)document.getElementById('disclaimerModal').classList.add('open');updateUsageUI();if(isPremium)enablePremium();if(usageCount>=MAX_FREE&&!isPremium)showTrialExpired()}
+  function updateUsageUI(){const pct=Math.min((usageCount/MAX_FREE)*100,100);document.getElementById('usageFill').style.width=pct+'%';document.getElementById('usageCount').textContent=usageCount+' / '+MAX_FREE;document.getElementById('trialText').textContent=isPremium?'Premium ✓':Math.max(MAX_FREE-usageCount,0)+' free left';const el=document.getElementById('usageCount');el.className='usage-count';if(usageCount>=MAX_FREE)el.classList.add('danger');else if(usageCount===MAX_FREE-1)el.classList.add('warn');else el.classList.add('ok');if(isPremium){const b=document.getElementById('trialBadge');b.style.background='rgba(16,185,129,0.1)';b.style.borderColor='rgba(16,185,129,0.25)';b.style.color='#10B981';document.querySelector('.trial-badge .dot').style.background='#10B981'}}
+  function showTrialExpired(){document.getElementById('trialExpired').style.display='block';document.getElementById('analyzeBtn').disabled=true}
+  function enablePremium(){document.getElementById('premiumOverlay').style.display='none';isPremium=true}
+  function closeCrisis(){document.getElementById('crisisModal').classList.remove('open')}
+  async function runAnalysis(){
+    if(!disclaimerAgreed){document.getElementById('disclaimerModal').classList.add('open');return}
+    if(usageCount>=MAX_FREE&&!isPremium){showTrialExpired();return}
+    const problem=document.getElementById('problemInput').value.trim();
+    const facts=document.getElementById('factsInput').value.trim();
+    const allText=[problem,facts,...[1,2,3,4,5].map(i=>document.getElementById('why'+i).value)].join(' ');
+    if(!problem){document.getElementById('problemInput').focus();document.getElementById('problemInput').style.borderColor='#EF4444';setTimeout(()=>document.getElementById('problemInput').style.borderColor='',2000);return}
+    if(checkCrisis(allText)){document.getElementById('crisisModal').classList.add('open');return}
+    if(checkIllegal(allText)){document.getElementById('results').style.display='block';document.getElementById('resultContent').textContent='⚠️ ClearStep is designed for personal and professional challenges. We cannot assist with requests that may cause harm. If you need support, please call 988.';return}
+    const whys=[1,2,3,4,5].map(i=>document.getElementById('why'+i).value.trim()).filter(Boolean);
+    const options=[1,2,3].map(i=>document.getElementById('opt'+i).value.trim()).filter(Boolean);
+    document.getElementById('analyzeBtn').style.display='none';
+    document.getElementById('loadingState').style.display='block';
+    document.getElementById('results').style.display='none';
+    try{
+      const result=await callAI(problem,facts,whys,options);
+      if(!isPremium){usageCount++;localStorage.setItem('cs_usage',usageCount);updateUsageUI();if(usageCount>=MAX_FREE)showTrialExpired()}
+      document.getElementById('loadingState').style.display='none';
+      document.getElementById('analyzeBtn').style.display='flex';
+      document.getElementById('results').style.display='block';
+      document.getElementById('resultContent').textContent=result;
+      document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'});
+    }catch(err){document.getElementById('loadingState').style.display='none';document.getElementById('analyzeBtn').style.display='flex';alert('Something went wrong. Please try again.')}
+  }
+  async function callAI(problem,facts,whys,options){
+    await new Promise(r=>setTimeout(r,2200));
+    const quotes=["You've already taken the hardest step — you're facing this head on.","This situation does not define you. Your response to it does.","You have more strength than this problem. Let's prove it.","Every great comeback started with someone who refused to stay stuck."];
+    const quote=quotes[Math.floor(Math.random()*quotes.length)];
+    if(isPremium){return`💙 ${quote}\n\n━━━━━━━━━━━━━━━━━━━━━━\n🧠 DEEP ANALYSIS — PREMIUM\n━━━━━━━━━━━━━━━━━━━━━━\n\nROOT CAUSE SUMMARY\nThe core issue traces back to: ${whys.length?whys[whys.length-1]:problem}. This IS addressable.\n\nRISK ASSESSMENT\n🔴 High Risk: No plan = compounding stress\n🟡 Medium Risk: Partial action masks symptoms only\n🟢 Low Risk: Systematic approach breaks the cycle\n\nSCENARIO PLANNING\n✅ Best Case: Root cause addressed in 2 weeks\n⚡ Most Likely: Progress in 7-10 days, resolved in 60\n⚠️ Worst Case: Escalates if delayed — start TODAY\n\nPRIORITIZED ACTION ROADMAP\n1. TODAY: Write the ONE thing that would most shift this\n2. DAY 1-2: Remove the biggest obstacle\n3. WEEK 1: Implement → ${options[0]||'your best idea'}\n4. WEEK 2-3: Review and double down on what works\n5. MONTH 2: Lock in gains, build a system\n\nSUCCESS METRICS\n✓ Root cause no longer present\n✓ You feel in control — not reactive\n✓ Early warning system in place\n\n━━━━━━━━━━━━━━━━━━━━━━\n💚 COACH'S NOTE\nYou showed up and mapped this out. That puts you ahead of 90% of people who stay stuck. Take ONE step in the next 24 hours.\n━━━━━━━━━━━━━━━━━━━━━━`}
+    return`✅ YOUR ACTION PLAN\n\n💙 ${quote}\n\nROOT CAUSE SUMMARY\nThe core issue: ${whys.length?whys[whys.length-1]:problem}\n\nTOP 3 ACTIONS\n1. Address the root cause directly — not the symptoms\n2. ${options[0]?'Start with: '+options[0]:'Break this into the smallest possible first step'}\n3. Tell one trusted person your plan — accountability is everything\n\nYOUR FIRST STEP — DO THIS TODAY\n→ Set a 20-minute timer. Write what "solved" looks like. Work backwards.\n\n━━━━━━━━━━━━\n⚡ Upgrade to Premium ($2.99/mo) for deep scenario planning, risk analysis, full roadmap, and motivational coaching.\n━━━━━━━━━━━━`
+  }
+  function openModal(){document.getElementById('modalOverlay').classList.add('open')}
+  function closeModal(){document.getElementById('modalOverlay').classList.remove('open')}
+  function handleUpgrade(){localStorage.setItem('cs_premium','true');isPremium=true;enablePremium();updateUsageUI();document.getElementById('trialExpired').style.display='none';document.getElementById('analyzeBtn').disabled=false;document.getElementById('analyzeBtn').style.display='flex';closeModal();alert('🎉 Premium activated! Connect Stripe for real payments.')}
+  document.getElementById('modalOverlay').addEventListener('click',function(e){if(e.target===this)closeModal()});
+  init();
+</script>
+</body>
+</html>
